@@ -79,7 +79,7 @@
 }
 
 .Akuma {
-    background: no-repeat center/60% url("../img/Akuma.png");
+    background: no-repeat center/60% url("../img/Akuma.png") !important;
 }
 
 .LadyBug {

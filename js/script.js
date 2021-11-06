@@ -17,7 +17,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let userLevel = 1;
     let enemies = [];
 
-    class gameObject {
+    class GameObject {
 
         constructor(character) {
             this.position = null;
@@ -31,7 +31,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     }
 
-    class Kvami extends gameObject {
+    class Kvami extends GameObject {
 
         constructor(character) {
             super(character);
@@ -45,12 +45,10 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    class Enemy extends gameObject{
+    class Enemy extends GameObject{
 
         constructor(character) {
             super (character);
-            this.position = null;
-            this.cell = null;
         }
 
 
@@ -133,8 +131,9 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    class Player {
+    class Player extends GameObject{
         constructor(position, cell, character, kvami) {
+            super();
             this.position = position;
             this.cell = cell;
             this.character = character;
@@ -152,6 +151,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if (suicide) {
                 isGameActive = false;
                 userLevel = 1;
+                return;
             }
             this.checkKvami();
             this.checkFinish();
@@ -204,7 +204,10 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         checkFinish() {
-
+            if (this.position === tableSize - 1 && this.kvami === true) {
+                userLevel += 1;
+                resetGame();
+            }
         }
 
         checkKvami() {
@@ -231,8 +234,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
         checkSuicide() {
             if (this.cell.classList.contains("Akuma")) {
-                status.innerHTML = "Defeat";
-                status.style.color = warning;
+                gameStatus.innerHTML = "Defeat";
+                gameStatus.style.color = warning;
                 return true;
             }
         }
@@ -242,11 +245,11 @@ window.addEventListener('DOMContentLoaded', () => {
     let Tikki = new Kvami("Tikki");
     Tikki.renderObject();
 
-    console.log(Tikki);
-
     function createEnemy() {
-        checkPosition: for (let i = 0; i < userLevel; i++) {
-            if ( i>=5 ) { break };
+        for (let i = 0; i < userLevel; i++) {
+            if ( i>=5 ) {
+                break
+            }
             let enemy = new Enemy("Akuma")
             if ( enemy.createEnemy() === false ) {
                 i--;
@@ -276,7 +279,30 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    reset.addEventListener("click", () => {
+        userLevel = 1;
+        resetGame();
+        gameStatus.innerHTML = "Game Active";
+        gameStatus.style.color = neutral;
+    });
 
     function resetGame() {
+        cells.forEach((cell) => {
+            cell.classList.remove("LadyBug");
+            cell.classList.remove("amulet");
+            cell.classList.remove("Akuma");
+            cell.classList.remove("Tikki");
+        });
+        isGameActive = true;
+        gameStatus.innerHTML = "Level Complete!";
+        gameStatus.style.color = complete;
+        Tikki = new Kvami("Tikki");
+        Tikki.renderObject();
+        currentLevel.innerText = `Level: ${userLevel}`;
+        LadyBug = new Player(0, cells[0], "LadyBug", false);
+        keyToFinish.innerText = "Kvami: no";
+        LadyBug.renderObject();
+        enemies = [];
+        createEnemy();
     }
 });
