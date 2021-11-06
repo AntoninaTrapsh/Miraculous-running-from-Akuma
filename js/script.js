@@ -162,10 +162,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     let enemies = [];
     function createEnemy() {
-        checkPosition: for (let i = 0; i < userLevel; i++) {
-            if (i >= 5) {
-                break;
-            }
+        checkPosition: for (let i = 0; i < 5; i++) {
             let position = Math.floor(Math.random() * (tableSize - 2)) + 1;
             if (positionKvami === position || [1, 6, 7].includes(position)) {
                 i--;
