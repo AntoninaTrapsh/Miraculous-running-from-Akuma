@@ -116,17 +116,20 @@ window.addEventListener('DOMContentLoaded', () => {
                         if (akuma.position === position) {
                             return false;
                         } else {
-                            this.position = position;
-                            this.cell = cells[position];
+                            this.determinePosition(position);
                             this.renderObject();
                         }
                     }
                 }  else {
-                    this.position = position;
-                    this.cell = cells[position];
+                    this.determinePosition(position);
                     this.renderObject();
                 }
             }
+        }
+
+        determinePosition(index) {
+            this.position = index;
+            this.cell = cells[index];
         }
     }
 
