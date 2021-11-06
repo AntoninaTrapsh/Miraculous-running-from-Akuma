@@ -15,20 +15,44 @@ window.addEventListener('DOMContentLoaded', () => {
 
     let isGameActive = true;
     let userLevel = 1;
+    let enemies = [];
 
     class gameObject {
-        constructor(position, cell, character) {
-            this.position = position;
-            this.cell = cell;
+
+        constructor(character) {
+            this.position = null;
+            this.cell = null;
             this.character = character;
         }
 
         renderObject() {
             this.cell.classList.add(`${this.character}`);
         }
+
+    }
+
+    class Kvami extends gameObject {
+
+        constructor(character) {
+            super(character);
+            this.value = this.generatePosition();
+            this.position = this.value;
+            this.cell = cells[this.value];
+        }
+
+        generatePosition() {
+            return Math.floor(Math.random() * (tableSize - 2)) + 1;
+        }
     }
 
     class Enemy extends gameObject{
+
+        constructor(character) {
+            super (character);
+            this.position = null;
+            this.cell = null;
+        }
+
 
         generateDirection() {
             let direction = Math.floor(Math.random() * 4);
@@ -47,6 +71,14 @@ window.addEventListener('DOMContentLoaded', () => {
                     break;
             }
             this.setEnemyAction(direction);
+        }
+
+        attack(character) {
+            if (this.cell.classList.contains(`${character}`)) {
+                gameStatus.innerHTML = "Defeat";
+                gameStatus.style.color = warning;
+                return true;
+            }
         }
 
         enemyAction(direction) {
@@ -75,12 +107,37 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.enemyAction(direction);
             }
         }
+
+        createEnemy() {
+            let position = Math.floor(Math.random() * (tableSize - 2)) + 1;
+            if (Tikki.position === position || [1, 6, 7].includes(position)) {
+                return false;
+            } else {
+                if ( enemies.length > 0 ) {
+                    for (let akuma of enemies) {
+                        if (akuma.position === position) {
+                            return false;
+                        } else {
+                            this.position = position;
+                            this.cell = cells[position];
+                            this.renderObject();
+                        }
+                    }
+                }  else {
+                    this.position = position;
+                    this.cell = cells[position];
+                    this.renderObject();
+                }
+            }
+        }
     }
 
 
-    class Player extends gameObject {
+    class Player {
         constructor(position, cell, character, kvami) {
-            super(position, cell, character);
+            this.position = position;
+            this.cell = cell;
+            this.character = character;
             this.kvami = kvami;
         }
 
@@ -91,6 +148,11 @@ window.addEventListener('DOMContentLoaded', () => {
             this.cell = cell;
             this.position = index;
             this.cell.classList.add(`${this.character}`);
+            const suicide = this.checkSuicide();
+            if (suicide) {
+                isGameActive = false;
+                userLevel = 1;
+            }
             this.checkKvami();
             this.checkFinish();
             this.checkEnemy();
@@ -146,40 +208,57 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         checkKvami() {
-
+            if (this.cell.classList.contains("Tikki")) {
+                this.cell.classList.remove("Tikki");
+                this.kvami = true;
+                keyToFinish.innerText = "Kvami: yes";
+                this.cell.classList.remove(`${this.character}`);
+                this.character = "amulet";
+                this.cell.classList.add(`${this.character}`);
+            }
         }
 
         checkEnemy() {
             for (let enemy of enemies) {
                 enemy.generateDirection();
+                let checkDie = enemy.attack(`${this.character}`);
+                if (checkDie) {
+                    isGameActive = false;
+                    userLevel = 1;
+                }
+            }
+        }
+
+        checkSuicide() {
+            if (this.cell.classList.contains("Akuma")) {
+                status.innerHTML = "Defeat";
+                status.style.color = warning;
+                return true;
             }
         }
     }
 
-    let positionKvami = Math.floor(Math.random() * (tableSize - 2)) + 1;
-    let Tikki = new gameObject(positionKvami, cells[positionKvami], "Tikki");
+
+    let Tikki = new Kvami("Tikki");
     Tikki.renderObject();
 
-    let enemies = [];
+    console.log(Tikki);
+
     function createEnemy() {
-        checkPosition: for (let i = 0; i < 5; i++) {
-            let position = Math.floor(Math.random() * (tableSize - 2)) + 1;
-            if (positionKvami === position || [1, 6, 7].includes(position)) {
+        checkPosition: for (let i = 0; i < userLevel; i++) {
+            if ( i>=5 ) { break };
+            let enemy = new Enemy("Akuma")
+            if ( enemy.createEnemy() === false ) {
                 i--;
-                continue checkPosition;
+                continue;
             }
-            for (let akuma of enemies) {
-                if (akuma.position === position) {
-                    i--;
-                    continue checkPosition;
-                }
-            }
-            enemies.push(new Enemy(position, cells[position], "Akuma"));
-            enemies[i].renderObject();
+            enemies.push(enemy);
         }
+        console.log(enemies);
     }
 
     createEnemy();
+
 
     let LadyBug = new Player(0, cells[0], "LadyBug", false);
 
